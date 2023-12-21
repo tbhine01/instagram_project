@@ -36,9 +36,17 @@ async function updatePost(req, res) {
     res.status(200).json(post)
 }
 
+async function deletePost(req, res) {
+    const id = req.body.id
+
+    const data = await Model.findByIdAndDelete(id)
+    res.status(200).send(`Post ${id} was deleted`)
+}
+
 module.exports = {
     createPost,
     getPosts,
     getPostById,
-    updatePost
+    updatePost, 
+    deletePost
 }

@@ -43,6 +43,7 @@ app.get('/post/:id', queries.getPostById)
 app.put('/updatepost/:id', queries.updatePost)
 
 // Delete Post
+app.delete('/deletepost', queries.deletePost)
 
 
 app.listen(3000)
