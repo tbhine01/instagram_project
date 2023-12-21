@@ -13,8 +13,32 @@ async function createPost(req, res) {
     res.status(200).json(savePost)
 }
 
+async function getPosts(req, res) {
+    const posts = await Model.find()
+    res.status(200).json(posts)
+}
 
+
+async function getPostById(req, res) {
+    const id = req.params.id
+
+    const post = await Model.findById(id)
+    res.status(200).json(post)
+}
+
+async function updatePost(req, res) {
+    const id = req.params.id
+    const newData = req.body
+    const options = {new: true}
+
+    const post = await Model.findByIdAndUpdate(id, newData, options)
+
+    res.status(200).json(post)
+}
 
 module.exports = {
-    createPost
+    createPost,
+    getPosts,
+    getPostById,
+    updatePost
 }

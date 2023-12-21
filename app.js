@@ -33,6 +33,17 @@ app.get("/", (req, res) => {
 // Create Posts
 app.post('/createpost', queries.createPost)
 
+// Get all Posts
+app.get('/posts', queries.getPosts)
+
+// Get Post by ID
+app.get('/post/:id', queries.getPostById)
+
+// Update one Post by ID
+app.put('/updatepost/:id', queries.updatePost)
+
+// Delete Post
+
 
 app.listen(3000)
 console.log("Express is running")
