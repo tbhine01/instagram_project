@@ -11,7 +11,8 @@ const commentSchema = new mongoose.Schema({
     }, 
     timestamp:{
         required: true,
-        type: Number
+        type: Date,
+        default: Date.now
     }
 })
 
@@ -42,7 +43,8 @@ const postsSchema = new mongoose.Schema({
     },
     timestamp: {
         require: true,
-        type: Number
+        type: Date,
+        default: Date.now
     }
 })
 

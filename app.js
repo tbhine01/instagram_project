@@ -45,6 +45,17 @@ app.put('/updatepost/:id', queries.updatePost)
 // Delete Post
 app.delete('/deletepost', queries.deletePost)
 
+// Create Comment
+app.post('/post/:id/addcomment', queries.addComment)
+
+// Delete Comment
+app.delete('/post/:id/deletecomment', queries.deleteComment)
+
+// Like a post
+app.post('/post/:id/like', queries.likePost)
+
+app.post('/post/:id/unlike', queries.unlikePost)
+
 
 app.listen(3000)
 console.log("Express is running")
