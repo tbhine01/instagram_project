@@ -1,20 +1,36 @@
 const Model = require("./schema.js")
+const Pool = require('pg').Pool
+const tokenManger = require('./token-manager.js')
+require('dotenv').config()
+
+const pool = new Pool({
+    user: process.env.USER,
+    host: process.env.HOST,
+    database: process.env.DATABASE,
+    password: process.env.PASSWORD,
+    port: 5432
+})
+
 
 async function createPost(req, res) {
-    const post = new Model({
-        userid: req.body.userid,
-        username: req.body.username,
-        image: req.body.image,
-        caption: req.body.caption,
-        timestamp: req.body.timestamp
-    })
-
-    if(req.body.caption) {
-        post.caption = req.body.caption
-    }
-
-    const savePost = await post.save()
-    res.status(200).json(savePost)
+    await pool.query('SELECT username FROM users WHERE id = $1', [req.user], (async (error, results) => {
+        if(error) {
+            throw error
+        }
+        let username = results.rows[0].username
+        const post  = new Model({
+            userid: req.user,
+            username: username,
+            image: req.body.image,
+            timestamp: Date.now()
+        })
+        if(req.body.caption) {
+            console.log(req.body.caption)
+            post.caption = req.body.caption
+        } 
+        const savePost = await post.save()
+        res.status(200).json(savePost)   
+    }))
 }
 
 async function getPosts(req, res) {
@@ -98,7 +114,7 @@ async function likePost(req, res) {
 
 async function unlikePost(req, res) {
     const postId = req.params.id
-    const userId = req.body.userid
+    const userId = req.user
     const post = await Model.findById(postId)
 
     const index = post.likes.indexOf(userId)
@@ -109,7 +125,73 @@ async function unlikePost(req, res) {
     res.status(200).json(data)
 }
 
+// Postgres User Table
 
+async function getUser(req, res) {
+    const id = req.user
+
+    await pool.query('SELECT * FROM users WHERE id = $1', [id], (error, results) => {
+        if(error){
+            throw error 
+        }
+        res.status(200).json(results.rows)
+    })
+}
+
+async function createUser(req, res) {
+    const email = req.body.email
+    const username = req.body.username
+    const password = req.body.password
+
+    await pool.query('INSERT INTO users (email, username, password) VALUES ($1, $2, $3) RETURNING *', [email, username, password], (error, results) => {
+        if (error){
+            throw error 
+        }
+
+        res.status(201).send(results.rows) //201 means it successfully posted
+    })
+}
+
+async function deleteUser (req, res) {
+    const id = req.user
+    await pool.query('DELETE FROM users WHERE id = $1', [id], (error, results) => {
+        if(error){
+            throw error 
+        }
+
+        res.status(200).send(`User${id} has been deleted`)
+    })
+}
+
+async function updateUser (req, res) {
+    const id = req.user
+
+    const email = req.body.email
+    const username = req.body.username
+    const password = req.body.password
+
+    await pool.query('UPDATE users SET email = $1, username = $2, password = $3 WHERE id = $4', [email, username, password, id], (error, results) => {
+        if(error){
+            throw error 
+        }
+
+        res.status(200).send(`User ${id} info has been modified successfully`)
+    })
+}
+
+async function login (req, res) {
+    const email = req.body.email
+    const password = req.body.password
+
+    await pool.query('SELECT * FROM users WHERE email = $1 AND password = $2', [email, password], (error, results) => {
+        if(error){
+            throw error 
+        }
+
+        const token = tokenManger.generateAccessToken(results.rows[0].id) //generate our access token with the ID we get back from the database
+        res.status(200).json(token) //we are sendong back the token
+    })
+}
 
 
 module.exports = {
@@ -121,5 +203,10 @@ module.exports = {
     addComment,
     deleteComment,
     likePost,
-    unlikePost
+    unlikePost,
+    getUser,
+    createUser,
+    deleteUser,
+    updateUser,
+    login
 }

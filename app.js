@@ -3,10 +3,15 @@ require('dotenv').config()
 const express = require('express')
 const mongoose = require('mongoose')
 const queries = require('./queries.js')
+const tokenManger = require('./token-manager.js')
 const bodyParser = require('body-parser')
 const app = express()
+const path = require('path')
+const cors = require('cors')
+
 
 // Express Config
+app.use(cors())
 app.use(bodyParser.json())
 
 //Mongoose Config
@@ -30,31 +35,54 @@ app.get("/", (req, res) => {
     res.send("Hello World")
 })
 
+// Posts 
+
 // Create Posts
-app.post('/createpost', queries.createPost)
+app.post('/createpost', tokenManger.authenticateToken, queries.createPost)
 
 // Get all Posts
-app.get('/posts', queries.getPosts)
+app.get('/posts', tokenManger.authenticateToken, queries.getPosts)
 
 // Get Post by ID
-app.get('/post/:id', queries.getPostById)
+app.get('/post/:id', tokenManger.authenticateToken, queries.getPostById)
 
 // Update one Post by ID
-app.put('/updatepost/:id', queries.updatePost)
+app.put('/updatepost/:id', tokenManger.authenticateToken, queries.updatePost)
 
 // Delete Post
-app.delete('/deletepost', queries.deletePost)
+app.delete('/deletepost', tokenManger.authenticateToken, queries.deletePost)
 
 // Create Comment
-app.post('/post/:id/addcomment', queries.addComment)
+app.post('/post/:id/addcomment', tokenManger.authenticateToken, queries.addComment)
 
 // Delete Comment
-app.delete('/post/:id/deletecomment', queries.deleteComment)
+app.delete('/post/:id/deletecomment', tokenManger.authenticateToken, queries.deleteComment)
 
 // Like a post
-app.post('/post/:id/like', queries.likePost)
+app.post('/post/:id/like', tokenManger.authenticateToken, queries.likePost)
 
-app.post('/post/:id/unlike', queries.unlikePost)
+//Unlike a Post
+app.post('/post/:id/unlike', tokenManger.authenticateToken, queries.unlikePost)
+
+
+// Users
+
+// Get User by ID
+app.get('/user/:id', tokenManger.authenticateToken, queries.getUser)
+
+// Register New User
+app.post('/user', queries.createUser)
+
+// Delete User (only yourself)
+app.delete('/user/:id', tokenManger.authenticateToken, queries.deleteUser)
+
+// Update User Info
+app.put('/user/:id', tokenManger.authenticateToken, queries.updateUser)
+
+// Login 
+app.post('/login', queries.login)
+
+
 
 
 app.listen(3000)
